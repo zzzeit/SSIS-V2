@@ -13,7 +13,7 @@ class StudentProfileApp:
         self.root.title("Student Profile")
         self.root.geometry('700x640')
         self.root.resizable(False, False)
-
+        self.db = dm.DataManager()
         # FLAGS
         self.filter_dict = [{"None" : 0, "Sex" : 1, "Year Level" : 2, "College Code" : 3, "Program Code" : 4}, 
                              {"None" : 0, "College Code" : 1, "Program Code" : 2},
@@ -23,9 +23,9 @@ class StudentProfileApp:
         self.filter_mode = None
         self.filter_value = None
 
-        self.students_database = dm.load_data("./database/students.csv")
-        self.programs_database = dm.load_data("./database/programs.csv")
-        self.colleges_database = dm.load_data("./database/colleges.csv")
+        self.students_database = self.db.get_students()
+        self.programs_database = self.db.get_programs()
+        self.colleges_database = self.db.get_colleges()
 
         self.current_year = dt.datetime.now().year
 
@@ -40,6 +40,8 @@ class StudentProfileApp:
         self.themeColors = ["#454148", "#5c5960", "#757278", "#8f8d92"]
         self.root.configure(bg=self.themeColors[0])
         self.create_main_frames()
+
+
 
 
 
@@ -87,7 +89,7 @@ class StudentProfileApp:
 
     def add_student(self, data):
         self.students_database.append(data)
-        dm.write_data("./database/students.csv", self.students_database)
+        self.db.insert_student(data)
 
         self.updateProgramsList()
         self.updatePrograms_database()
@@ -173,11 +175,7 @@ class StudentProfileApp:
             self.updateColleges_database()
 
     def update_college(self, college_code, data):
-        for i, college in enumerate(self.colleges_database):
-            if college[1] == college_code:
-                self.colleges_database[i] = data
-                break
-        dm.write_data("./database/colleges.csv", self.colleges_database, 2)
+        self.db.update_college(college_code, data)
 
         self.updateColleges_database()
         self.updateCollegesList()
@@ -192,7 +190,7 @@ class StudentProfileApp:
                 self.programs_list.append(i[0])
 
     def updatePrograms_database(self):
-        self.programs_database = dm.load_data("./database/programs.csv")
+        self.programs_database = self.db.get_programs()
 
     def updateCollegesList(self):
         for i in self.colleges_database:
@@ -200,7 +198,10 @@ class StudentProfileApp:
                 self.colleges_list.append(i[1])
     
     def updateColleges_database(self):
-        self.colleges_database = dm.load_data("./database/colleges.csv")
+        self.colleges_database = self.db.get_colleges()
+
+
+
 
     # Getter methods
     def getColor(self, index):
@@ -209,7 +210,6 @@ class StudentProfileApp:
     def getRoot(self):
         return self.root
 
-    
     def getProgramDb(self):
         return self.programs_database
     
@@ -245,6 +245,7 @@ def main():
     root = tk.Tk()
     app = StudentProfileApp(root)
     root.mainloop()
+    app.db.close()
 
 DB_CONFIG = {
     'host': '127.0.0.1',
