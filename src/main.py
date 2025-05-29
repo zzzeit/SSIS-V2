@@ -227,13 +227,6 @@ def main():
     app = StudentProfileApp(root)
     root.mainloop()
     app.db.close()
-
-DB_CONFIG = {
-    'host': '127.0.0.1',
-    'user': 'root',
-    'password': 'admin',
-    'database': 'ssis'
-}
-
+    
 if __name__ == "__main__":
     main()
