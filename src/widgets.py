@@ -878,7 +878,7 @@ class Frame7(Frame5): # ADD COLLEGE FRAME
         self.college_code_entry = ttk.Entry(AC_frames[0], width=10, font=('helvetica', 15))
         self.college_code_entry.pack(side='right')
 
-        self.college_name_label = tk.Label(AC_frames[1], text="Program Code", font=('helvetica', 15))
+        self.college_name_label = tk.Label(AC_frames[1], text="College Name", font=('helvetica', 15))
         self.college_name_label.pack(side='left')
         self.college_name_entry = ttk.Entry(AC_frames[1], width=10, font=('helvetica', 15))
         self.college_name_entry.pack(side='right')

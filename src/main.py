@@ -84,8 +84,8 @@ class StudentProfileApp:
         if alert:
             confirm = messagebox.askyesno("Delete Student", "Are you sure you want to delete this student?")
         if confirm:
-            self.students_database = [student for student in self.students_database if student[3] != student_id]
-            dm.write_data("./database/students.csv", self.students_database)
+            self.db.delete_student(student_id)
+            self.students_database = self.db.get_students()
 
     def add_student(self, data):
         self.students_database.append(data)
@@ -95,12 +95,8 @@ class StudentProfileApp:
         self.updatePrograms_database()
 
     def replace_student(self, student_id, data):
-        for i, student in enumerate(self.students_database):
-            if student[3] == student_id:
-                self.students_database[i] = data
-                break
-        dm.write_data("./database/students.csv", self.students_database)
-
+        self.db.replace_student(student_id, data)
+        self.students_database = self.db.get_students()
         self.updateProgramsList()
         self.updatePrograms_database()
 
@@ -111,8 +107,8 @@ class StudentProfileApp:
         return False
 
     def add_program(self, data):
-        self.programs_database.append(data)
-        dm.write_data("./database/programs.csv", self.programs_database, 1)
+        self.db.insert_program(data)
+        self.programs_database = self.db.get_programs()
 
         self.updateProgramsList()
         self.updatePrograms_database()
@@ -122,8 +118,8 @@ class StudentProfileApp:
             confirm = messagebox.askyesno("Delete Program", "Are you sure you want to delete this program?")
         if confirm:
             print(f"Deleting {code}")
-            self.programs_database = [prog for prog in self.programs_database if prog[1] != code]
-            dm.write_data("./database/programs.csv", self.programs_database, 1)
+            self.db.delete_program(code)
+            self.programs_database = self.db.get_programs()
 
             self.updateProgramsList()
             self.updatePrograms_database()
@@ -133,23 +129,18 @@ class StudentProfileApp:
                     self.delete_student(i[3], False)
 
     def update_program(self, program_code, data):
-        for i, program in enumerate(self.programs_database):
-            if program[1] == program_code:
-                self.programs_database[i] = data
-                break
-        dm.write_data("./database/programs.csv", self.programs_database, 1)
+        self.db.update_program(program_code, data)
 
-
-        for student in self.students_database:
-            if student[6] == program_code:
-                self.replace_student(student[3], student[:5] + [data[0]] + [data[1]])
+        self.students_database = self.db.get_students()
+        self.programs_database = self.db.get_programs()
+        self.colleges_database = self.db.get_colleges()
 
         self.updateProgramsList()
         self.updatePrograms_database()
     
     def add_college(self, data):
-        self.colleges_database.append(data)
-        dm.write_data("./database/colleges.csv", self.colleges_database, 2)
+        self.db.insert_college(data)
+        self.colleges_database = self.db.get_colleges()
 
         self.updateColleges_database()
         self.updateCollegesList()
@@ -157,18 +148,10 @@ class StudentProfileApp:
     def delete_college(self, code):
         confirm = messagebox.askyesno("Delete College", "Are you sure you want to delete this college?")
         if confirm:
-            # Delete the college from the database
-            self.colleges_database = [coll for coll in self.colleges_database if coll[1] != code]
-            dm.write_data("./database/colleges.csv", self.colleges_database, 2)
-
-            # Cascade delete programs associated with the college
-            programs_to_delete = [program for program in self.programs_database if program[0] == code]
-            for program in programs_to_delete:
-                print(f"{code} == {program[1]}")
-                self.delete_program(program[1], alert=False)  # Delete each program without additional confirmation
-
+            self.db.delete_college(code)
 
             # Update the lists and databases
+            self.students_database = self.db.get_students()
             self.updateProgramsList()
             self.updatePrograms_database()
             self.updateCollegesList()
@@ -176,13 +159,11 @@ class StudentProfileApp:
 
     def update_college(self, college_code, data):
         self.db.update_college(college_code, data)
+        self.students_database = self.db.get_students()
+        self.programs_database = self.db.get_programs()
 
         self.updateColleges_database()
         self.updateCollegesList()
-
-        for program in self.programs_database:
-            if program[0] == college_code:
-                self.update_program(program[1], [data[1]] + [program[1]] + [program[2]])
 
     def updateProgramsList(self):
         for i in self.programs_database:
